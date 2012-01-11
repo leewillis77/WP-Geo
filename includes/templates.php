@@ -239,7 +239,7 @@ function get_wpgeo_map( $query, $options = null ) {
 	
 	$wpgeo_map_id++;
 	
-	$id = 'wpgeo_map_id_' . $wpgeo_map_id;
+	$id = 'wp_geo_map_id_' . $wpgeo_map_id;
 	
 	$wp_geo_options = get_option('wp_geo_options');
 	
@@ -278,53 +278,37 @@ function get_wpgeo_map( $query, $options = null ) {
 		'width'   => $r['width'],
 		'height'  => $r['height']
 	) );
-	$output .= '
-		<script type="text/javascript">
-		<!--
-		jQuery(window).load( function() {
-			if ( GBrowserIsCompatible() ) {
-				var bounds = new GLatLngBounds();
-				map = new GMap2(document.getElementById("' . $id . '"));
-				' . WPGeo_API_GMap2::render_map_control( 'map', 'GLargeMapControl3D' ) . '
-				map.setMapType(' . $r['type'] . ');
-				';
+	
+	// Map
+	$map = new WPGeo_Map( $id );
+	$map->setMapControl( 'GLargeMapControl3D' );
+	$map->setMapType( $r['type'] );
 	if ( $posts ) :
-		$polyline = new WPGeo_Polyline( array(
-			'color' => $r['polyline_colour']
-		) );
 		foreach ( $posts as $post ) {
-			$latitude = get_post_meta($post->ID, WPGEO_LATITUDE_META, true);
-			$longitude = get_post_meta($post->ID, WPGEO_LONGITUDE_META, true);
-			if ( is_numeric($latitude) && is_numeric($longitude) ) {
-				$marker = get_post_meta($post->ID, WPGEO_MARKER_META, true);
+			$latitude = get_post_meta( $post->ID, WPGEO_LATITUDE_META, true );
+			$longitude = get_post_meta( $post->ID, WPGEO_LONGITUDE_META, true );
+			if ( is_numeric( $latitude ) && is_numeric( $longitude ) ) {
+				$marker = get_post_meta( $post->ID, WPGEO_MARKER_META, true );
 				if ( empty( $marker ) )
 					$marker = $r['markers'];
-				$icon = 'wpgeo_icon_' . apply_filters( 'wpgeo_marker_icon', $marker, $post, 'wpgeo_map' );
-				$polyline->add_coord( $latitude, $longitude );
-				$output .= '
-					var center = new GLatLng(' . $latitude . ',' . $longitude . ');
-					var marker = new wpgeo_createMarker2(map, center, ' . $icon . ', \'' . esc_js( $post->post_title ) . '\', \'' . get_permalink($post->ID) . '\');
-					bounds.extend(center);
-					';
+				$icon = apply_filters( 'wpgeo_marker_icon', $marker, $post, 'wpgeo_map' );
+				$map->addPoint( $latitude, $longitude, $icon, $post->post_title, get_permalink( $post->ID ) );
 			}
 		}
 		if ( $r['polylines'] == 'Y' ) {
-			$output .= WPGeo_API_GMap2::render_map_overlay( 'map', WPGeo_API_GMap2::render_polyline( $polyline ) );
+			$map->showPolyline( true );
 		}
-		$output .= '
-			zoom = map.getBoundsZoomLevel(bounds);
-			map.setCenter(bounds.getCenter(), zoom);
-			';
+		$output .= $map->renderMapJS( array(
+			'id'             => substr( $id, 11 ),
+			'use_map_bounds' => true
+		) );
 	else : 
-		$output .= '
-				map.setCenter(new GLatLng(' . $wp_geo_options['default_map_latitude'] . ', ' . $wp_geo_options['default_map_longitude'] . '), ' . $wp_geo_options['default_map_zoom'] . ');';
+		$map->setMapCentre( $wp_geo_options['default_map_latitude'], $wp_geo_options['default_map_longitude'] );
+		$map->setMapZoom( $wp_geo_options['default_map_zoom'] );
+		$output .= $map->renderMapJS( array(
+			'id' => substr( $id, 11 )
+		) );
 	endif;
-	$output .= '
-			}
-		} );
-		-->
-		</script>
-		';
 	
 	return $output;
 	
