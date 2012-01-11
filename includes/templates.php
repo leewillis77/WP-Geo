@@ -514,52 +514,24 @@ function wpgeo_add_widget_map( $args = null ) {
 			$wpgeo->includeGoogleMapsJavaScriptAPI();
 			$small_marker = $wpgeo->markers->get_marker_by_id( 'small' );
 			
-			$html_js .= '
-				<script type="text/javascript">
-				//<![CDATA[
-				
-				/**
-				 * Widget Map (' . $args['id'] . ')
-				 */
-				
-				// Define variables
-				var map = "";
-				var bounds = "";
-				
-				// Add events to load the map
-				GEvent.addDomListener(window, "load", createMapWidget);
-				GEvent.addDomListener(window, "unload", GUnload);
-				
-				// Create the map
-				function createMapWidget() {
-					if (GBrowserIsCompatible()) {
-						map = new GMap2(document.getElementById("' . $args['id'] . '"));
-						' . WPGeo_API_GMap2::render_map_control( 'map', 'GSmallZoomControl3D' ) . '
-						map.setCenter(new GLatLng(0, 0), 0);
-						map.setMapType(' . $args['maptype'] . ');
-						bounds = new GLatLngBounds();
-						
-						// Add the markers	
-						'.	$markers_js .'
-						
-						// Draw the polygonal lines between points
-						' . $polyline_js . '
-						
-						// Center the map to show all markers
-						var center = bounds.getCenter();
-						var zoom = map.getBoundsZoomLevel(bounds)
-						if (zoom > ' . $args['zoom'] . ') {
-							zoom = ' . $args['zoom'] . ';
-						}
-						map.setCenter(center, zoom);
-					}
-				}
-				
-				//]]>
-				</script>';
+			$widget_map = new WPGeo_Map( $args['id'] );
+			$widget_map->showPolyline( $args['showpolylines'] );
+			$widget_map->setMapControl( 'GSmallZoomControl3D' );
+			$widget_map->setMapType( $args['maptype'] );
+			// Markers
+			for ( $i = 0; $i < count( $coords ); $i++ ) {
+				$icon = apply_filters( 'wpgeo_marker_icon', 'small', $coords[$i]['post'], 'widget' );
+				$widget_map->addPoint( $coords[$i]['latitude'], $coords[$i]['longitude'], $icon, addslashes( __( $coords[$i]['title'] ) ), get_permalink( $coords[$i]['id'] ) );
+			}
+			
+			$html_js .= $widget_map->renderMapJS( array(
+				'id'             => $args['id'],
+				'use_map_bounds' => true,
+				'max_zoom'       => $args['zoom']
+			) );
 			
 			$html_js .= apply_filters( 'wpgeo_map', '', array(
-				'id'      => $args['id'],
+				'id'      => 'wp_geo_map_' . $args['id'],
 				'classes' => array( 'wp_geo_map' ),
 				'width'   => $args['width'],
 				'height'  => $args['height']

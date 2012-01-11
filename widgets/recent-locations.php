@@ -68,7 +68,7 @@ class WPGeo_Recent_Locations_Widget extends WP_Widget {
 					'maptype'       => $maptype,
 					'showpolylines' => $showpolylines,
 					'zoom'          => $zoom,
-					'id'            => $args['widget_id'] . '-map',
+					'id'            => str_replace( '-', '_', $args['widget_id'] ) . '_map',
 					'posts'         => $posts
 				) );
 				

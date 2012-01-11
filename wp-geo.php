@@ -87,7 +87,6 @@ add_action( 'init', array( $wpgeo, 'init' ) );
 add_action( 'init', array( $wpgeo, 'init_later' ), 10000 );
 add_action( 'wp_enqueue_scripts', array( $wpgeo, 'includeGoogleMapsJavaScriptAPI' ) );
 add_action( 'wp_head', array( $wpgeo, 'wp_head' ) );
-add_action( 'wp_footer', array( $wpgeo, 'wp_footer' ) );
 add_action( 'admin_init', array( $wpgeo, 'admin_init' ) );
 add_action( 'admin_head', array( $wpgeo, 'admin_head' ) );
 add_action( 'admin_menu', array( $wpgeo, 'admin_menu' ) );

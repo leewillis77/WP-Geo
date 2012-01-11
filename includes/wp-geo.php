@@ -367,6 +367,8 @@ class WPGeo {
 			var wpgeo_scale = \'' . $wp_geo_options['show_map_scale'] . '\';
 			var wpgeo_overview = \'' . $wp_geo_options['show_map_overview'] . '\';
 			
+			' . apply_filters( 'wpgeo_wp_head_js', '' ) . '
+			
 			//]]>
 			</script>
 			
@@ -501,38 +503,13 @@ class WPGeo {
 				
 				$google_maps_api_key = $wpgeo->get_google_api_key();
 				$zoom = $wp_geo_options['default_map_zoom'];
-				
-				// Loop through maps to get Javascript
-				$js_map_writes = '';
-				foreach ( $this->maps as $map ) {
-					$js_map_writes .= $map->renderMapJS();
-				}
 						
 				// Script
 				$wpgeo->includeGoogleMapsJavaScriptAPI();
-				$html_content = '
-				<script type="text/javascript">
-				//<![CDATA[
-				
-				var map = null; ' . $js_map_inits . '
-				var marker = null; ' . $js_marker_inits . '
-				
-				function init_wp_geo_map()
-				{
-					if (GBrowserIsCompatible())
-					{
-						' . $js_map_writes . '
-					}
+				$html_content = '';
+				foreach ( $this->maps as $map ) {
+					$html_content .= $map->renderMapJS();
 				}
-				if (document.all&&window.attachEvent) { // IE-Win
-					window.attachEvent("onload", function () { init_wp_geo_map(); });
-					window.attachEvent("onunload", GUnload);
-				} else if (window.addEventListener) { // Others
-					window.addEventListener("load", function () { init_wp_geo_map(); }, false);
-					window.addEventListener("unload", GUnload, false);
-				}
-				//]]>
-				</script>';
 				
 				echo $html_content;
 				
@@ -1879,23 +1856,6 @@ class WPGeo {
 		
 		return $mydata;
 	
-	}
-	
-	
-	
-	function wp_footer() {
-		
-		$js = $this->maps2->get_maps_javascript();
-		
-		if ( !empty( $js ) ) {
-			echo '<script type="text/javascript">
-				<!--
-				' . $js . '
-				-->
-				</script>
-				';
-		}
-		
 	}
 	
 	

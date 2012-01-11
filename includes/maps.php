@@ -133,12 +133,17 @@ class WPGeo_Map {
 	 * @return       (string) JavaScript
 	 */
 	
-	function renderMapJS( $map_id = false ) {
-	
+	function renderMapJS( $args = null ) {
+		$args = wp_parse_args( $args, array(
+			'id'             => false,
+			'use_map_bounds' => false,
+			'max_zoom'       => null
+		) );
+		
 		$wp_geo_options = get_option('wp_geo_options');
 		
 		// ID of div for map output
-		$map_id = $map_id ? $map_id : $this->id;
+		$map_id = $args['id'] ? $args['id'] : $this->id;
 		$div = 'wp_geo_map_' . $map_id;
 		
 		// Map Types
@@ -153,7 +158,6 @@ class WPGeo_Map {
 			for ( $i = 0; $i < count($this->points); $i++ ) {
 				$icon = 'wpgeo_icon_' . apply_filters( 'wpgeo_marker_icon', $this->points[$i]['icon'], $this->id, 'wpgeo_map' );
 				$js_markers .= 'var marker_' . $map_id .'_' . $i . ' = new wpgeo_createMarker2(map_' . $map_id . ', new GLatLng(' . $this->points[$i]['latitude'] . ', ' . $this->points[$i]['longitude'] . '), ' . $icon . ', \'' . addslashes(__($this->points[$i]['title'])) . '\', \'' . $this->points[$i]['link'] . '\');' . "\n";
-				$js_markers .= 'bounds.extend(new GLatLng(' . $this->points[$i]['latitude'] . ', ' . $this->points[$i]['longitude'] . '));';
 			}
 		}
 		
@@ -208,6 +212,29 @@ class WPGeo_Map {
 		if ( $this->mapcontrol != "" ) {
 			$js .= WPGeo_API_GMap2::render_map_control( 'map_' . $map_id, $this->mapcontrol );
 		}
+		
+		// Bounds
+		$map_bounds = '';
+		if ( $args['use_map_bounds'] ) {
+			$map_bounds .= 'var bounds = new GLatLngBounds();';
+			if ( count($this->points) > 0 ) {
+				for ( $i = 0; $i < count($this->points); $i++ ) {
+					$map_bounds .= 'bounds.extend(new GLatLng(' . $this->points[$i]['latitude'] . ', ' . $this->points[$i]['longitude'] . '));';
+				}
+			}
+			$map_bounds .= '
+				var center = bounds.getCenter();
+				var zoom = map_' . $map_id . '.getBoundsZoomLevel(bounds);';
+			if ( $args['max_zoom'] !== null ) {
+				$map_bounds .= 'if (zoom > ' . absint( $args['max_zoom'] ) . ') {
+						zoom = ' . absint( $args['max_zoom'] ) . ';
+					}';
+			}
+			$map_bounds .= '
+				map_' . $map_id . '.setCenter(center, zoom);
+				';
+		}
+		
 		$js .= '
 				var center_' . $map_id .' = new GLatLng(' . $this->points[0]['latitude'] . ', ' . $this->points[0]['longitude'] . ');
 				
@@ -217,12 +244,25 @@ class WPGeo_Map {
 				' . $js_polyline . '
     			' . $js_zoom . '
     			' . $js_controls . '
+    			' . $map_bounds . '
 				
 				//' . WPGeo_API_GMap2::render_map_overlay( 'map_' . $map_id, 'new GLayer("org.wikipedia.en")' ) . ';
 				//' . WPGeo_API_GMap2::render_map_overlay( 'map_' . $map_id, 'new GLayer("com.panoramio.all")' ) . ';
 				//' . WPGeo_API_GMap2::render_map_overlay( 'map_' . $map_id, 'new google.maps.LocalSearch()' ) . '; // http://googleajaxsearchapi.blogspot.com/2007/06/local-search-control-for-maps-api.html
 				
 			}';
+		
+		// Wrap loader JS
+		$js = '
+			<script type="text/javascript">
+			// Map (' . $map_id . ')
+			GEvent.addDomListener(window, "load", function() {
+				if (GBrowserIsCompatible()) {
+					' . $js . '
+				}
+			});
+			</script>
+			';
 		
 		return $js;
 		
