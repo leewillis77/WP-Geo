@@ -72,38 +72,11 @@ class WPGeo_Display {
 	function render() {
 		
 		if ( count( $this->maps ) > 0 ) {
-		
-			echo '
-				<script type="text/javascript">
-				
-				function renderWPGeo() {
-					if (GBrowserIsCompatible()) {
-					';
 			foreach ( $this->maps as $map ) {
-				echo '
-					map = new GMap2(document.getElementById("wpgeo-' . $map['id'] . '"));
-					map.setCenter(new GLatLng(41.875696,-87.624207), 3);
-					geoXml = new GGeoXml("' . $map['rss'] . '");
-					GEvent.addListener(geoXml, "load", function() {
-						geoXml.gotoDefaultViewport(map);
-					});
-					' . WPGeo_API_GMap2::render_map_overlay( 'map', 'geoXml' ) . '
-					';
+				$m = new WPGeo_Map( $map['id'] );
+				$m->addGeoXMLURL( $map['rss'] );
+				echo $m->renderMapJS();
 			}
-			echo '}
-				}
-			
-				if (document.all&&window.attachEvent) { // IE-Win
-					window.attachEvent("onload", function () { renderWPGeo(); });
-					window.attachEvent("onunload", GUnload);
-				} else if (window.addEventListener) { // Others
-					window.addEventListener("load", function () { renderWPGeo(); }, false);
-					window.addEventListener("unload", GUnload, false);
-				}
-				
-				</script>
-				';
-		
 		}
 		
 	}
@@ -139,7 +112,7 @@ class WPGeo_Display {
 			$this->addMap($map);
 			$wp_geo_options = get_option('wp_geo_options');
 			return apply_filters( 'wpgeo_map', '', array(
-				'id'      => 'wpgeo-' . $id,
+				'id'      => 'wp_geo_map_' . $id,
 				'classes' => array( 'wpgeo', 'wpgeo-rss' ),
 				'width'   => $wp_geo_options['default_map_width'],
 				'height'  => $wp_geo_options['default_map_height'],

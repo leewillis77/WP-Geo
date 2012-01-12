@@ -100,6 +100,7 @@ class WPGeo_Map {
 	
 	var $id;
 	var $points;
+	var $geoxml_urls;
 	var $zoom = 5;
 	var $maptype = 'G_NORMAL_MAP';
 	var $maptypes;
@@ -121,6 +122,7 @@ class WPGeo_Map {
 		$this->id = $id;
 		$this->maptypes = array();
 		$this->points = array();
+		$this->geoxml_urls = array();
 		
 	}
 	
@@ -139,7 +141,6 @@ class WPGeo_Map {
 			'use_map_bounds' => false,
 			'max_zoom'       => null
 		) );
-		
 		$wp_geo_options = get_option('wp_geo_options');
 		
 		// ID of div for map output
@@ -151,6 +152,23 @@ class WPGeo_Map {
 		$maptypes[] = $this->maptype;
 		$maptypes = array_unique($maptypes);
 		$js_maptypes = WPGeo_API_GMap2::render_map_types( 'map_' . $map_id, $maptypes );
+		
+		// GeoXML
+		$js_geoxml = '';
+		$geoxml_count = 1;
+		if ( count( $this->geoxml_urls ) > 0 ) {
+			foreach ( $this->geoxml_urls as $geoxml_url) {
+				$geoxml_id = 'map_' . $map_id . '_geoXml_' . $geoxml_count;
+				$js_geoxml .= '
+					' . $geoxml_id . ' = new GGeoXml("' . $geoxml_url . '");
+					GEvent.addListener(' . $geoxml_id . ', "load", function() {
+						' . $geoxml_id . '.gotoDefaultViewport(map_' . $map_id . ');
+						map_' . $map_id . '.addOverlay(' . $geoxml_id . ');
+					});
+					';
+				$geoxml_count++;
+			}
+		}
 		
 		// Markers
 		$js_markers = '';
@@ -202,9 +220,14 @@ class WPGeo_Map {
 				var bounds = new GLatLngBounds();
     
 				map_' . $map_id . ' = new GMap2(document.getElementById("' . $div . '"));
+				';
+		if ( !empty( $this->points[0]['latitude'] ) && !empty( $this->points[0]['longitude'] ) ) {
+			$js .= '
 				var center = new GLatLng(' . $this->points[0]['latitude'] . ', ' . $this->points[0]['longitude'] . ');
 				map_' . $map_id . '.setCenter(center, ' . $this->zoom . ');
-				
+				';
+		}
+		$js .= '
 				' . $js_maptypes . '
 				map_' . $map_id . '.setMapType(' . $this->maptype . ');
 				
@@ -235,13 +258,18 @@ class WPGeo_Map {
 				';
 		}
 		
-		$js .= '
+		if ( !empty( $this->points[0]['latitude'] ) && !empty( $this->points[0]['longitude'] ) ) {
+			$js .= '
 				var center_' . $map_id .' = new GLatLng(' . $this->points[0]['latitude'] . ', ' . $this->points[0]['longitude'] . ');
-				
+				';
+		}
+		
+		$js .= '
 				' . apply_filters( 'wpgeo_map_js_preoverlays', '', 'map_' . $map_id ) . '
 				
 				' . $js_markers . '
 				' . $js_polyline . '
+				' . $js_geoxml . '
     			' . $js_zoom . '
     			' . $js_controls . '
     			' . $map_bounds . '
@@ -335,6 +363,15 @@ class WPGeo_Map {
 			'link' => $link,
 		);
 	
+	}
+	
+	
+	
+	/**
+	 * Add GeoXML URL
+	 */
+	function addGeoXMLURL( $url ) {
+		$this->geoxml_urls[] = $url;
 	}
 	
 	
