@@ -791,93 +791,26 @@ class WPGeo {
 		
 		// Vars
 		$google_maps_api_key = $wpgeo->get_google_api_key();
-		$panel_open ? $panel_open = 'jQuery(\'#wpgeolocationdiv.postbox h3\').click();' : $panel_open = '';
-		$hide_marker ? $hide_marker = 'marker.hide();' : $hide_marker = '';
+		$panel_open = !$panel_open ? 'jQuery("#wpgeo_location.closed h3.hndle").trigger("click");' : '';
 		
 		// Script
 		$wpgeo->includeGoogleMapsJavaScriptAPI();
 		$html_content = '
 			<script type="text/javascript">
-			//<![CDATA[
-			
-			function init_wp_geo_map_admin()
-			{
-				if (GBrowserIsCompatible() && document.getElementById("wp_geo_map"))
-				{
-					map = new GMap2(document.getElementById("wp_geo_map"));
-					var center = new GLatLng(' . $mapcentre[0] . ', ' . $mapcentre[1] . ');
-					var point = new GLatLng(' . $latitude . ', ' . $longitude . ');
-					map.setCenter(center, ' . $zoom . ');
-					map.addMapType(G_PHYSICAL_MAP);
-					
-					var zoom_setting = document.getElementById("wpgeo_map_settings_zoom");
-					zoom_setting.value = ' . $zoom . ';
-					
-					// Map Controls
-					' . WPGeo_API_GMap2::render_map_control( 'map', 'GLargeMapControl3D' ) . '
-					' . WPGeo_API_GMap2::render_map_control( 'map', 'GMapTypeControl' ) . '
-					//map.setUIToDefault();
-					
-					map.setMapType(' . $maptype . ');
-					var type_setting = document.getElementById("wpgeo_map_settings_type");
-					type_setting.value = wpgeo_getMapTypeContentFromUrlArg(map.getCurrentMapType().getUrlArg());
-					
-					GEvent.addListener(map, "click", function(overlay, latlng) {
-						var latField = document.getElementById("wp_geo_latitude");
-						var lngField = document.getElementById("wp_geo_longitude");
-						latField.value = latlng.lat();
-						lngField.value = latlng.lng();
-						marker.setPoint(latlng);
-						marker.show();
+			jQuery(window).load( function() {
+				' . $panel_open . '
+				if (jQuery("#wp_geo_map").length > 0) {
+					jQuery("#wp_geo_map").trigger("wpgeo_init_admin_map", {
+						latitude:         ' . $latitude . ',
+						longitude:        ' . $longitude . ',
+						center_latitude:  ' . $mapcentre[0] . ',
+						center_longitude: ' . $mapcentre[1] . ',
+						zoom:             ' . $zoom . ',
+						maptype:          ' . $maptype . ',
+						hide_marker:      ' . ( $hide_marker ? 'true' : 'false' ) . '
 					});
-					
-					GEvent.addListener(map, "maptypechanged", function() {
-						var type_setting = document.getElementById("wpgeo_map_settings_type");
-						type_setting.value = wpgeo_getMapTypeContentFromUrlArg(map.getCurrentMapType().getUrlArg());
-					});
-					
-					GEvent.addListener(map, "zoomend", function(oldLevel, newLevel) {
-						var zoom_setting = document.getElementById("wpgeo_map_settings_zoom");
-						zoom_setting.value = newLevel;
-					});
-					
-					GEvent.addListener(map, "moveend", function() {
-						var center = this.getCenter();
-						var centre_setting = document.getElementById("wpgeo_map_settings_centre");
-						centre_setting.value = center.lat() + "," + center.lng();
-					});
-					
-					marker = new GMarker(point, {draggable: true});
-					
-					GEvent.addListener(marker, "dragstart", function() {
-						map.closeInfoWindow();
-					});
-					
-					GEvent.addListener(marker, "dragend", function() {
-						var coords = marker.getLatLng();
-						var latField = document.getElementById("wp_geo_latitude");
-						var lngField = document.getElementById("wp_geo_longitude");
-						latField.value = coords.lat();
-						lngField.value = coords.lng();
-					});
-					
-					' . apply_filters( 'wpgeo_map_js_preoverlays', '', 'map' ) . '
-					' . WPGeo_API_GMap2::render_map_overlay( 'map', 'marker' ) . '
-					
-					' . $panel_open . '
-					
-					var latField = document.getElementById("wp_geo_latitude");
-					var lngField = document.getElementById("wp_geo_longitude");
-					
-					' . $hide_marker . '
-					
 				}
-			}
-			
-			jQuery(window).load( init_wp_geo_map_admin );
-			jQuery(window).unload( GUnload );
-			
-			//]]>
+			});
 			</script>';
 			
 		return $html_content;

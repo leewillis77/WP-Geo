@@ -35,7 +35,80 @@ function wpgeo_updatedLatLngFields() {
 
 jQuery(document).ready(function() {
 	
-	
+	// Init admin map
+	jQuery("#wp_geo_map").bind('wpgeo_init_admin_map', function(e, data) {
+		if (GBrowserIsCompatible()) {
+			map = new GMap2(document.getElementById(jQuery(this).attr('id')));
+			var center = new GLatLng(data.center_latitude, data.center_longitude);
+			var point = new GLatLng(data.latitude, data.longitude);
+			map.setCenter(center, data.zoom);
+			map.addMapType(G_PHYSICAL_MAP);
+			
+			var zoom_setting = document.getElementById("wpgeo_map_settings_zoom");
+			zoom_setting.value = data.zoom;
+			
+			// Map Controls
+			map.addControl(new GLargeMapControl3D());
+			map.addControl(new GMapTypeControl());
+			
+			// @todo How can we do this without eval()?
+			map.setMapType(eval(data.maptype));
+			var type_setting = document.getElementById("wpgeo_map_settings_type");
+			type_setting.value = wpgeo_getMapTypeContentFromUrlArg(map.getCurrentMapType().getUrlArg());
+			
+			GEvent.addListener(map, "click", function(overlay, latlng) {
+				var latField = document.getElementById("wp_geo_latitude");
+				var lngField = document.getElementById("wp_geo_longitude");
+				latField.value = latlng.lat();
+				lngField.value = latlng.lng();
+				marker.setPoint(latlng);
+				marker.show();
+			});
+			
+			GEvent.addListener(map, "maptypechanged", function() {
+				var type_setting = document.getElementById("wpgeo_map_settings_type");
+				type_setting.value = wpgeo_getMapTypeContentFromUrlArg(map.getCurrentMapType().getUrlArg());
+			});
+			
+			GEvent.addListener(map, "zoomend", function(oldLevel, newLevel) {
+				var zoom_setting = document.getElementById("wpgeo_map_settings_zoom");
+				zoom_setting.value = newLevel;
+			});
+			
+			GEvent.addListener(map, "moveend", function() {
+				var center = this.getCenter();
+				var centre_setting = document.getElementById("wpgeo_map_settings_centre");
+				centre_setting.value = center.lat() + "," + center.lng();
+			});
+			
+			marker = new GMarker(point, {draggable: true});
+			
+			GEvent.addListener(marker, "dragstart", function() {
+				map.closeInfoWindow();
+			});
+			
+			GEvent.addListener(marker, "dragend", function() {
+				var coords = marker.getLatLng();
+				var latField = document.getElementById("wp_geo_latitude");
+				var lngField = document.getElementById("wp_geo_longitude");
+				latField.value = coords.lat();
+				lngField.value = coords.lng();
+			});
+					
+			//' . apply_filters( 'wpgeo_map_js_preoverlays', '', 'map' ) . '
+			map.addOverlay(marker);
+			
+			var latField = document.getElementById("wp_geo_latitude");
+			var lngField = document.getElementById("wp_geo_longitude");
+			
+			if (data.hide_marker) {
+				marker.hide();
+			}
+			map.checkResize();
+		}
+		// Avoid memory leaks
+		jQuery(window).unload( GUnload );
+	});
 	
 	// Latitude field updated
 	jQuery("#wp_geo_latitude").keyup(function() {
