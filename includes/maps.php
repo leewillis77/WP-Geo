@@ -202,7 +202,7 @@ class WPGeo_Map {
 		}
 		if ( count($this->points) == 1 ) {
 			if ( is_numeric( $this->mapcentre['latitude'] ) && is_numeric( $this->mapcentre['longitude'] ) ) {
-				$js_zoom .= 'map_' . $map_id . '.setCenter(new GLatLng(' . $this->mapcentre['latitude'] . ', ' . $this->mapcentre['longitude'] . '));';
+				$js_zoom .= 'map_' . $map_id . '.setCenter(new GLatLng(' . $this->mapcentre['latitude'] . ', ' . $this->mapcentre['longitude'] . '), ' . $this->zoom . ');';
 			}
 		}
 		
