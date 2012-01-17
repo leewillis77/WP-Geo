@@ -62,15 +62,6 @@ include_once( WPGEO_DIR . 'api/google-maps/google-maps.php' );
 
 
 
-// Admin Includes
-if ( is_admin() ) {
-	include_once( WPGEO_DIR . 'admin/editor.php' );
-	include_once( WPGEO_DIR . 'admin/dashboard.php' );
-	include_once( WPGEO_DIR . 'admin/settings.php' );
-}
-
-
-
 // Init.
 global $wpgeo;
 $wpgeo = new WPGeo();
