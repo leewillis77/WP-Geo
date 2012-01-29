@@ -176,7 +176,13 @@ class WPGeo_Map {
 		if ( count($this->points) > 0 ) {
 			for ( $i = 0; $i < count($this->points); $i++ ) {
 				$icon = 'wpgeo_icon_' . apply_filters( 'wpgeo_marker_icon', $this->points[$i]['icon'], $this->id, 'wpgeo_map' );
-				$js_markers .= 'var marker_' . $map_id .'_' . $i . ' = new wpgeo_createMarker2(map_' . $map_id . ', new GLatLng(' . $this->points[$i]['latitude'] . ', ' . $this->points[$i]['longitude'] . '), ' . $icon . ', \'' . addslashes(__($this->points[$i]['title'])) . '\', \'' . $this->points[$i]['link'] . '\');' . "\n";
+				$js_markers .= 'var marker_' . $map_id .'_' . $i . ' = new WPGeo_API_GoogleMaps.createMarker({
+						map    : map_' . $map_id . ',
+						latlng : new GLatLng(' . $this->points[$i]['latitude'] . ', ' . $this->points[$i]['longitude'] . '),
+						icon   : ' . $icon . ',
+						title  : \'' . addslashes( __( $this->points[$i]['title'] ) ) . '\',
+						link   : \'' . $this->points[$i]['link'] . '\'
+					});' . "\n";
 			}
 		}
 		

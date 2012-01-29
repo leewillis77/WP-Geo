@@ -149,7 +149,7 @@ var WPGeo_API_GoogleMaps_Admin = {
 	},
 	
 	// Get the Google Map type from a URL parameter
-	function getMapTypeContentFromUrlArg( arg ) {
+	getMapTypeContentFromUrlArg : function( arg ) {
 		
 		if ( arg == G_NORMAL_MAP.getUrlArg() ) {
 			return "G_NORMAL_MAP";

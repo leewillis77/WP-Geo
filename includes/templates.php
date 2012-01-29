@@ -492,7 +492,13 @@ function wpgeo_add_widget_map( $args = null ) {
 			// Markers
 			for ( $i = 0; $i < count( $coords ); $i++ ) {
 				$icon = 'wpgeo_icon_' . apply_filters( 'wpgeo_marker_icon', 'small', $coords[$i]['post'], 'widget' );
-				$markers_js .= 'marker' . $i . ' = wpgeo_createMarker(new GLatLng(' . $coords[$i]['latitude'] . ', ' . $coords[$i]['longitude'] . '), ' . $icon . ', "' . addslashes( __( $coords[$i]['title'] ) ) . '", "' . get_permalink( $coords[$i]['id'] ) . '");' . "\n";
+				$markers_js .= 'marker' . $i . ' = WPGeo_API_GoogleMaps.createMarker({
+						map    : map,
+						latlng : new GLatLng(' . $coords[$i]['latitude'] . ', ' . $coords[$i]['longitude'] . '),
+						icon   : ' . $icon . ',
+						title  : "' . addslashes( __( $coords[$i]['title'] ) ) . '",
+						link   : "' . get_permalink( $coords[$i]['id'] ) . '"
+					});' . "\n";
 			}
 			
 			$wpgeo->includeGoogleMapsJavaScriptAPI();

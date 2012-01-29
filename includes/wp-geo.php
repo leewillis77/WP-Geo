@@ -671,7 +671,6 @@ class WPGeo {
 			$locale = $wpgeo->get_googlemaps_locale('&hl=');
 			
 			wp_register_script('googlemaps', 'http://maps.google.com/maps?file=api&v=2' . $locale . '&key=' . $wpgeo->get_google_api_key() . '&sensor=false', false, '2');
-			wp_register_script('wpgeo', WPGEO_URL . 'js/wp-geo.js', array('googlemaps', 'wpgeotooltip'), '1.0');
 			wp_register_script('wpgeotooltip', WPGEO_URL . 'js/tooltip.js', array('googlemaps', 'jquery'), '1.0');
 			wp_register_script('wpgeo-admin-post', WPGEO_URL . 'js/admin-post.js', array('jquery', 'googlemaps'), '1.1');
 			

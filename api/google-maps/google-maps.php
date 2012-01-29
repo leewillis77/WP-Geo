@@ -83,7 +83,7 @@ class WPGeo_API_GoogleMaps {
 	 * Marker JavaScript
 	 */
 	function wpgeo_marker_javascript( $js, $marker ) {
-		return "wpgeo_createIcon(" . $marker->width . ", " . $marker->height . ", " . $marker->anchorX . ", " . $marker->anchorY . ", '" . $marker->image . "', '" . $marker->shadow . "')";
+		return "WPGeo_API_GoogleMaps.createIcon(" . $marker->width . ", " . $marker->height . ", " . $marker->anchorX . ", " . $marker->anchorY . ", '" . $marker->image . "', '" . $marker->shadow . "')";
 	}
 	
 }
