@@ -17,7 +17,7 @@ class WPGeo {
 	 */
 	
 	// Version Information
-	var $version    = '3.2.6.1';
+	var $version    = '3.2.6.2';
 	var $db_version = 1;
 	
 	var $markers;
@@ -658,19 +658,12 @@ class WPGeo {
 	/**
 	 * @method       Include Google Maps JavaScript API
 	 * @description  Queue JavaScripts required by WP Geo.
+	 * @todo         Move to external API
 	 */
 	
 	function includeGoogleMapsJavaScriptAPI() {
-		
 		global $wpgeo;
 		$wp_geo_options = get_option('wp_geo_options');
-		
-		// Google AJAX API
-		// Loads on all pages unless via proxy domain
-		if ( wpgeo_check_domain() && $wpgeo->checkGoogleAPIKey() ) {
-			//wp_register_script('google_jsapi', 'http://www.google.com/jsapi?key=' . $wpgeo->get_google_api_key(), false, '1.0');
-			//wp_enqueue_script('google_jsapi');
-		}
 		
 		if ( ($wpgeo->show_maps() || $wpgeo->widget_is_active()) && $wpgeo->checkGoogleAPIKey() ) {
 			
@@ -679,20 +672,25 @@ class WPGeo {
 			
 			wp_register_script('googlemaps', 'http://maps.google.com/maps?file=api&v=2' . $locale . '&key=' . $wpgeo->get_google_api_key() . '&sensor=false', false, '2');
 			wp_register_script('wpgeo', WPGEO_URL . 'js/wp-geo.js', array('googlemaps', 'wpgeotooltip'), '1.0');
-			wp_register_script('wpgeo-admin-post', WPGEO_URL . 'js/admin-post.js', array('jquery', 'googlemaps'), '1.0');
 			wp_register_script('wpgeotooltip', WPGEO_URL . 'js/tooltip.js', array('googlemaps', 'jquery'), '1.0');
+			wp_register_script('wpgeo-admin-post', WPGEO_URL . 'js/admin-post.js', array('jquery', 'googlemaps'), '1.1');
 			
-			wp_enqueue_script('jquery');
-			wp_enqueue_script('googlemaps');
-			wp_enqueue_script('wpgeo');
-			wp_enqueue_script('wpgeotooltip');
 			if ( is_admin() ) {
-				 wp_enqueue_script('wpgeo-admin-post');
+				wp_enqueue_script('jquery');
+				wp_enqueue_script('googlemaps');
+				wp_enqueue_script('wpgeo');
+				wp_enqueue_script('wpgeo-admin-post');
+				do_action( 'wpgeo_admin_enqueue_scripts' );
+			} else {
+				wp_enqueue_script('jquery');
+				wp_enqueue_script('googlemaps');
+				wp_enqueue_script('wpgeo');
+				wp_enqueue_script('wpgeotooltip');
+				do_action( 'wpgeo_wp_enqueue_scripts' );
 			}
 			
 			return '';
 		}
-		
 	}
 	
 	
@@ -801,7 +799,7 @@ class WPGeo {
 			jQuery(window).load( function() {
 				' . $panel_open . '
 				if (jQuery("#wp_geo_map").length > 0) {
-					jQuery("#wp_geo_map").trigger("wpgeo_init_admin_map", {
+					jQuery("#wp_geo_map").trigger("wpgeo_admin_map", {
 						latitude:         ' . $latitude . ',
 						longitude:        ' . $longitude . ',
 						center_latitude:  ' . $mapcentre[0] . ',

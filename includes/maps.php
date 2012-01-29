@@ -133,6 +133,7 @@ class WPGeo_Map {
 	 * @description  Outputs the javascript to display maps.
 	 * @param        $map_id = The map ID.
 	 * @return       (string) JavaScript
+	 * @todo         Move elements to external API
 	 */
 	
 	function renderMapJS( $args = null ) {
@@ -328,6 +329,7 @@ class WPGeo_Map {
 	/**
 	 * @method       Get Map JavaScript
 	 * @description  Gets the Javascript for a map.
+	 * @todo         Move elements to external API
 	 */
 	
 	function get_map_javascript() {
@@ -520,6 +522,7 @@ class WPGeo_Map {
 
 }
 
+// @todo Move elements to external API
 class WPGeo_API_GMap2 {
 	
 	function render_map_types( $map, $maptypes ) {

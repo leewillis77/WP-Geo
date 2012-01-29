@@ -11,6 +11,8 @@ class WPGeo_API_GoogleMaps {
 		add_filter( 'wpgeo_static_map_url', array( $this, 'wpgeo_static_map_url' ), 5, 2 );
 		add_filter( 'wpgeo_map_link', array( $this, 'wpgeo_map_link' ), 5, 2 );
 		add_filter( 'wpgeo_marker_javascript', array( $this, 'wpgeo_marker_javascript' ), 5, 2 );
+		add_filter( 'wpgeo_wp_enqueue_scripts', array( $this, 'wpgeo_wp_enqueue_scripts' ), 5, 2 );
+		add_filter( 'wpgeo_admin_enqueue_scripts', array( $this, 'wpgeo_admin_enqueue_scripts' ), 5, 2 );
 	}
 	
 	/**
@@ -19,6 +21,22 @@ class WPGeo_API_GoogleMaps {
 	function wpgeo_wp_head_js( $value ) {
 		$value .= 'GEvent.addDomListener(window, "unload", GUnload);';
 		return $value;
+	}
+	
+	/**
+	 * Enqueue WP Geo Scripts
+	 */
+	function wpgeo_wp_enqueue_scripts() {
+		wp_register_script( 'wpgeo-api-googlemaps', WPGEO_URL . 'api/google-maps/google-maps.js', array( 'jquery' ), '1.1' );
+		wp_enqueue_script( 'wpgeo-api-googlemaps' );
+	}
+	
+	/**
+	 * Enqueue WP Geo Admin Scripts
+	 */
+	function wpgeo_admin_enqueue_scripts() {
+		wp_register_script( 'wpgeo-api-googlemaps-admin', WPGEO_URL . 'api/google-maps/admin.js', array( 'jquery', 'wpgeo-admin-post' ), '1.1' );
+		wp_enqueue_script( 'wpgeo-api-googlemaps-admin' );
 	}
 	
 	/**
