@@ -20,6 +20,7 @@ class WPGeo {
 	var $version    = '3.2.6.2';
 	var $db_version = 1;
 	
+	var $admin;
 	var $markers;
 	var $show_maps_external = false;
 	var $plugin_message = '';
@@ -53,20 +54,6 @@ class WPGeo {
 		$this->markers = new WPGeo_Markers();
 		$this->feeds = new WPGeo_Feeds();
 		
-	}
-	
-	
-	
-	/**
-	 * Version upgrade message
-	 */
-	function version_upgrade_msg() {
-		$wp_geo_show_version_msg = get_option( 'wp_geo_show_version_msg' );
-		if ( current_user_can( 'manage_options' ) && $wp_geo_show_version_msg == 'Y' ) {
-			echo '<div id="wpgeo_version_message" class="error below-h2" style="margin:5px 15px 2px 0px;">
-					<p>WP Geo has been updated to use the WordPress widgets API. You will need to re-add your widgets. <a href="' . wp_nonce_url( add_query_arg( 'wpgeo_action', 'dismiss-update-msg', $_SERVER['PHP_SELF'] ), 'wpgeo_dismiss_update_msg' ) . '">Dismiss</a></p>
-				</div>';
-		}
 	}
 	
 	
@@ -581,42 +568,13 @@ class WPGeo {
 	
 	
 	/**
-	 * @method       Admin Init
-	 * @description  Runs actions required in the admin.
+	 * Admin Init
+	 * Runs actions required in the admin.
 	 */
-	
 	function admin_init() {
-		include_once( WPGEO_DIR . 'admin/editor.php' );
-		include_once( WPGEO_DIR . 'admin/dashboard.php' );
-		include_once( WPGEO_DIR . 'admin/settings.php' );
-		
-		// Register Settings
-		if ( function_exists('register_setting') ) {
-			register_setting('wp-geo-options', 'wp_geo_options', '');
-		}
-		
-		// Only show editor if Google API Key valid
-		if ( $this->checkGoogleAPIKey() ) {
-			if ( class_exists( 'WPGeo_Editor' ) ) {
-				$this->editor = new WPGeo_Editor();
-				$this->editor->add_buttons();
-			}
-		}
-		
-		// Dismiss Upgrade Message
-		if ( isset( $_GET['wpgeo_action'] ) && $_GET['wpgeo_action'] = 'dismiss-update-msg' ) {
-			if ( wp_verify_nonce( $_GET['_wpnonce'], 'wpgeo_dismiss_update_msg' ) ) {
-				update_option( 'wp_geo_show_version_msg', 'N' );
-				$url = remove_query_arg( 'wpgeo_action', $_SERVER['PHP_SELF'] );
-				$url = remove_query_arg( '_wpnonce', $url );
-				wp_redirect( $url );
-				exit();
-			}
-		}
-		
-		// Show Settings Link
+		include_once( WPGEO_DIR . 'admin/admin.php' );
+		$this->admin = new WPGeo_Admin();
 		$this->settings = new WPGeo_Settings();
-		
 	}
 	
 	
