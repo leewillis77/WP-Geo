@@ -203,6 +203,7 @@ class WPGeo {
 	 * @method       Check Google API Key
 	 * @description  Check that a Google API Key has been entered.
 	 * @return       (boolean)
+	 * @todo The API key needs to be done via filter
 	 */
 	
 	function checkGoogleAPIKey() {
@@ -219,7 +220,16 @@ class WPGeo {
 		
 	}
 	
-	
+	/**
+	 * Passed API Checks
+	 * By default returns true unless an API has implemented checks.
+	 * @todo Implement this with filters instead of the Key check above.
+	 *
+	 * @return (boolean)
+	 */
+	function passed_api_checks() {
+		return apply_filters( 'wpgeo_api_checks', true );
+	}
 	
 	/**
 	 * @method       Get Google API Key
@@ -268,6 +278,7 @@ class WPGeo {
 			
 		}
 		
+		// @todo The API key needs to be done via filter
 		if ( $showmap && !is_feed() && $this->checkGoogleAPIKey() ) {
 			echo apply_filters( 'wpgeo_map', '', array(
 				'id'      => 'wp_geo_map_visible',
@@ -520,6 +531,7 @@ class WPGeo {
 	function init() {
 	
 		// Only show admin things if Google API Key valid
+		// @todo The API key needs to be done via filter
 		if ( $this->checkGoogleAPIKey() ) {
 		
 			// Use the admin_menu action to define the custom boxes
@@ -623,6 +635,7 @@ class WPGeo {
 		global $wpgeo;
 		$wp_geo_options = get_option('wp_geo_options');
 		
+		// @todo The API key needs to be done via filter
 		if ( ($wpgeo->show_maps() || $wpgeo->widget_is_active()) && $wpgeo->checkGoogleAPIKey() ) {
 			
 			// Set Locale
@@ -1070,6 +1083,7 @@ class WPGeo {
         if ( !$wpgeo->markers->marker_folder_exists() ) {
             echo '<div class="error"><p>' . sprintf( __( "Unable to create the markers folder %s.<br />Please create it and copy the marker images to it from %s</p>", 'wp-geo' ), str_replace( ABSPATH, '', $wpgeo->markers->upload_dir ) . '/wp-geo/markers/', str_replace( ABSPATH, '', WPGEO_DIR ) . 'img/markers' ) . '</div>';
         }
+        // @todo The API key needs to be done via filter
 		if ( !$this->checkGoogleAPIKey() ) {
 			echo '<div class="error"><p>Before you can use Wp Geo you must acquire a <a href="http://code.google.com/apis/maps/signup.html">Google API Key</a> for your blog - the plugin will not function without it!</p></div>';
 		}

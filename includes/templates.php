@@ -213,6 +213,7 @@ function get_wpgeo_post_map( $post_id = null ) {
 		return '';
 	
 	if ( $id > 0 && !is_feed() ) {
+		// @todo The API key needs to be done via filter
 		if ( $wpgeo->show_maps() && $show_post_map != 'TOP' && $show_post_map != 'BOTTOM' && $wpgeo->checkGoogleAPIKey() ) {
 			return apply_filters( 'wpgeo_map', '', array(
 				'id'      => 'wp_geo_map_' . $id,
@@ -366,7 +367,8 @@ function get_wpgeo_post_static_map( $post_id = null, $query = null ) {
 	if ( !$id || is_feed() ) {
 		return '';
 	}
-
+	
+	// @todo The API key needs to be done via filter
 	if ( !$wpgeo->show_maps() || !$wpgeo->checkGoogleAPIKey() ) {
 		return '';
 	}
@@ -452,6 +454,7 @@ function wpgeo_add_widget_map( $args = null ) {
 		return $html_js;
 	
 	// If Google API Key...
+	// @todo The API key needs to be done via filter
 	if ( $wpgeo->checkGoogleAPIKey() ) {
 		
 		// Find the coordinates for the posts

@@ -29,6 +29,7 @@ class WPGeo_Category_Map_Widget extends WP_Widget {
 		global $wpgeo;
 
 		// If Google API Key...
+		// @todo The API key needs to be done via filter
 		if ( $wpgeo->checkGoogleAPIKey() ) {
 
 			// Extract the widget options
@@ -115,6 +116,7 @@ class WPGeo_Category_Map_Widget extends WP_Widget {
 		) );
 		
 		// Message if API key not set
+		// @todo The API key needs to be done via filter
 		if ( !$wpgeo->checkGoogleAPIKey() ) {
 			// @todo Check if there is a 'less hard-coded' way to write link to settings page
 			echo '<p class="wp_geo_error">' . __( 'WP Geo is not currently active as you have not entered a Google API Key', 'wp-geo') . '. <a href="' . admin_url( '/options-general.php?page=wp-geo/includes/wp-geo.php' ) . '">' . __( 'Please update your WP Geo settings', 'wp-geo' ) . '</a>.</p>';
