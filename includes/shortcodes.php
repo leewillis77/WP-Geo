@@ -110,8 +110,7 @@ if ( !function_exists( 'shortcode_wpgeo_map' ) ) {
 		
 		$show_post_map = apply_filters( 'wpgeo_show_post_map', $wp_geo_options['show_post_map'], $id );
 		
-		// @todo The API key needs to be done via filter
-		if ( $wpgeo->show_maps() && !is_feed() && $show_post_map != 'TOP' && $show_post_map != 'BOTTOM' && $wpgeo->checkGoogleAPIKey() ) {
+		if ( $wpgeo->show_maps() && !is_feed() && $show_post_map != 'TOP' && $show_post_map != 'BOTTOM' && $wpgeo->passed_api_checks() ) {
 			
 			$map_atts = array(
 				'width' => $wp_geo_options['default_map_width'],
@@ -194,8 +193,7 @@ if ( !function_exists( 'shortcode_wpgeo_mashup' ) ) {
 		);
 		extract( shortcode_atts( $map_atts, $atts ) );
 		
-		// @todo The API key needs to be done via filter
-		if ( !is_feed() && isset( $wpgeo ) && $wpgeo->show_maps() && $wpgeo->checkGoogleAPIKey() )
+		if ( !is_feed() && isset( $wpgeo ) && $wpgeo->show_maps() && $wpgeo->passed_api_checks() )
 			return get_wpgeo_map( $atts );
 		else
 			return '';

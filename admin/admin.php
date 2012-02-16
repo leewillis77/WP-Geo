@@ -27,7 +27,7 @@ class WPGeo_Admin {
 		}
 		
 		// Only show editor if Google API Key valid
-		if ( $wpgeo->checkGoogleAPIKey() ) {
+		if ( $wpgeo->passed_api_checks() ) {
 			$this->editor = new WPGeo_Editor();
 			$this->editor->add_buttons();
 		}

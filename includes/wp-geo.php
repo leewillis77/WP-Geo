@@ -200,24 +200,26 @@ class WPGeo {
 	
 	
 	/**
-	 * @method       Check Google API Key
-	 * @description  Check that a Google API Key has been entered.
-	 * @return       (boolean)
-	 * @todo The API key needs to be done via filter
+	 * Check Google API Key
+	 * Check that a Google API Key has been entered.
+	 * @todo Deprecate this function
+	 *
+	 * @return (boolean)
 	 */
-	
 	function checkGoogleAPIKey() {
-		
-		global $wpgeo;
-		
-		$wp_geo_options = get_option('wp_geo_options');
-		$api_key = $wpgeo->get_google_api_key();
-		
-		if ( empty($api_key ) || !isset($api_key) ) {
-			return false;
-		}
-		return true;
-		
+		return $this->passed_api_checks();
+	}
+	
+	/**
+	 * Get Google API Key
+	 * Gets the Google API Key. Passes it through a filter so it can be overriden by another plugin.
+	 * @todo Deprecate this function
+	 *
+	 * @return (string) API Key
+	 */
+	function get_google_api_key() {
+		$wp_geo_options = get_option( 'wp_geo_options' );
+		return apply_filters( 'wpgeo_google_api_key', $wp_geo_options['google_api_key'] );
 	}
 	
 	/**
@@ -229,19 +231,6 @@ class WPGeo {
 	 */
 	function passed_api_checks() {
 		return apply_filters( 'wpgeo_api_checks', true );
-	}
-	
-	/**
-	 * @method       Get Google API Key
-	 * @description  Gets the Google API Key. Passes it through a filter so it can be overriden by another plugin.
-	 * @return       (string) API Key
-	 */
-	
-	function get_google_api_key() {
-		
-		$wp_geo_options = get_option('wp_geo_options');
-		return apply_filters( 'wpgeo_google_api_key', $wp_geo_options['google_api_key'] );
-		
 	}
 	
 	
@@ -278,8 +267,7 @@ class WPGeo {
 			
 		}
 		
-		// @todo The API key needs to be done via filter
-		if ( $showmap && !is_feed() && $this->checkGoogleAPIKey() ) {
+		if ( $showmap && ! is_feed() && $this->passed_api_checks() ) {
 			echo apply_filters( 'wpgeo_map', '', array(
 				'id'      => 'wp_geo_map_visible',
 				'classes' => array( 'wp_geo_map' ),
@@ -499,7 +487,6 @@ class WPGeo {
 				
 				// ----------- End - Create map for visible posts and pages -----------
 				
-				$google_maps_api_key = $wpgeo->get_google_api_key();
 				$zoom = $wp_geo_options['default_map_zoom'];
 						
 				// Script
@@ -529,10 +516,10 @@ class WPGeo {
 	 */
 	
 	function init() {
+		$this->register_scripts();
 	
 		// Only show admin things if Google API Key valid
-		// @todo The API key needs to be done via filter
-		if ( $this->checkGoogleAPIKey() ) {
+		if ( $this->passed_api_checks() ) {
 		
 			// Use the admin_menu action to define the custom boxes
 			add_action('admin_menu', array($this, 'add_custom_boxes'));
@@ -626,89 +613,34 @@ class WPGeo {
 	
 	
 	/**
-	 * @method       Include Google Maps JavaScript API
-	 * @description  Queue JavaScripts required by WP Geo.
+	 * Include Google Maps JavaScript API
+	 * Queue JavaScripts required by WP Geo.
 	 * @todo         Move to external API
 	 */
-	
 	function includeGoogleMapsJavaScriptAPI() {
 		global $wpgeo;
-		$wp_geo_options = get_option('wp_geo_options');
+		$wp_geo_options = get_option( 'wp_geo_options' );
 		
-		// @todo The API key needs to be done via filter
-		if ( ($wpgeo->show_maps() || $wpgeo->widget_is_active()) && $wpgeo->checkGoogleAPIKey() ) {
-			
-			// Set Locale
-			$locale = $wpgeo->get_googlemaps_locale('&hl=');
-			
-			wp_register_script('googlemaps', 'http://maps.google.com/maps?file=api&v=2' . $locale . '&key=' . $wpgeo->get_google_api_key() . '&sensor=false', false, '2');
-			wp_register_script('wpgeotooltip', WPGEO_URL . 'js/tooltip.js', array('googlemaps', 'jquery'), '1.0');
-			wp_register_script('wpgeo-admin-post', WPGEO_URL . 'js/admin-post.js', array('jquery', 'googlemaps'), '1.1');
+		if ( ( $wpgeo->show_maps() || $wpgeo->widget_is_active() ) && $wpgeo->passed_api_checks() ) {
 			
 			if ( is_admin() ) {
-				wp_enqueue_script('jquery');
-				wp_enqueue_script('googlemaps');
-				wp_enqueue_script('wpgeo');
-				wp_enqueue_script('wpgeo-admin-post');
+				wp_enqueue_script( 'jquery' );
+				wp_enqueue_script( 'wpgeo-admin-post' );
 				do_action( 'wpgeo_admin_enqueue_scripts' );
 			} else {
-				wp_enqueue_script('jquery');
-				wp_enqueue_script('googlemaps');
-				wp_enqueue_script('wpgeo');
-				wp_enqueue_script('wpgeotooltip');
+				wp_enqueue_script( 'jquery' );
+				wp_enqueue_script( 'wpgeotooltip' );
 				do_action( 'wpgeo_wp_enqueue_scripts' );
 			}
-			
-			return '';
 		}
 	}
 	
-	
-	
 	/**
-	 * @method       Get Google Maps Locale
-	 * @description  See http://code.google.com/apis/maps/faq.html#languagesupport for link to updated languages codes.
-	 * @author       Alain Messin, tweaked by Ben :)
-	 * @param        $before = Before output
-	 * @param        $after = After output
-	 * @return       (string) Google locale
+	 * Register Scripts
 	 */
-	
-	function get_googlemaps_locale( $before = '', $after = '' ) {
-		
-		$l = get_locale();
-		
-		if ( !empty($l) ) {
-
-			// WordPress locale is xx_XX, some codes are known by google with - in place of _ , so replace
-			$l = str_replace('_', '-', $l);
-			
-			// Known Google codes known
-			$codes = array(
-				'en-AU',
-				'en-GB',
-				'pt-BR',
-				'pt-PT',
-				'zh-CN',
-				'zh-TW'
-			);
-			
-			// Other codes known by googlemaps are 2 characters codes
-			if ( !in_array($l, $codes) ) {
-				$l = substr($l, 0, 2);
-			}
-		
-		}
-		
-		// Apply filter - why not ;)
-		$l = apply_filters('wp_geo_locale', $l);
-		
-		if ( !empty($l) ) {
-			$l = $before . $l . $after;
-		}
-		
-		return $l;
-		
+	function register_scripts() {
+		wp_register_script( 'wpgeotooltip', WPGEO_URL . 'js/tooltip.js', array( 'jquery' ), '1.0' );
+		wp_register_script( 'wpgeo-admin-post', WPGEO_URL . 'js/admin-post.js', array( 'jquery' ), '1.1' );
 	}
 	
 	
@@ -759,7 +691,7 @@ class WPGeo {
 		}
 		
 		// Vars
-		$google_maps_api_key = $wpgeo->get_google_api_key();
+		// @todo Move to external API
 		$panel_open = !$panel_open ? 'jQuery("#wpgeo_location.closed h3.hndle").trigger("click");' : '';
 		
 		// Script
@@ -890,9 +822,11 @@ class WPGeo {
 	
 	function widget_is_active() {
 		$widgets = array(
+			'wpgeo_category_map_widget',
 			'wpgeo_recent_locations_widget',
 			'wpgeo_contextual_map_widget'
 		);
+		
 		foreach ( $widgets as $widget ) {
 			if ( is_active_widget( false, false, $widget, true ) ) {
 				return true;
@@ -978,6 +912,7 @@ class WPGeo {
 	 * @param        $val = Field value
 	 * @param        $checked = Checked value
 	 * @return       (string) Checkbox HTML
+	 * @todo         Can use the WordPress checked() and disabled() function instead
 	 */
 	
 	function options_checkbox( $id, $val, $checked, $disabled = false ) {
@@ -1083,9 +1018,11 @@ class WPGeo {
         if ( !$wpgeo->markers->marker_folder_exists() ) {
             echo '<div class="error"><p>' . sprintf( __( "Unable to create the markers folder %s.<br />Please create it and copy the marker images to it from %s</p>", 'wp-geo' ), str_replace( ABSPATH, '', $wpgeo->markers->upload_dir ) . '/wp-geo/markers/', str_replace( ABSPATH, '', WPGEO_DIR ) . 'img/markers' ) . '</div>';
         }
-        // @todo The API key needs to be done via filter
-		if ( !$this->checkGoogleAPIKey() ) {
-			echo '<div class="error"><p>Before you can use Wp Geo you must acquire a <a href="http://code.google.com/apis/maps/signup.html">Google API Key</a> for your blog - the plugin will not function without it!</p></div>';
+		if ( ! $this->passed_api_checks() ) {
+			$api_msg = apply_filters( 'wpgeo_api_error_message', '' );
+			if ( ! empty( $api_msg ) ) {
+				echo '<div class="error"><p>' . $api_msg . '</p></div>';
+			}
 		}
 		echo '<table class="form-table">
 					<tr valign="top">
