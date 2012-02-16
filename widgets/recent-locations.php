@@ -126,8 +126,10 @@ class WPGeo_Recent_Locations_Widget extends WP_Widget {
 		
 		// Message if API key not set
 		if ( ! $wpgeo->passed_api_checks() ) {
-			// @todo Check if there is a 'less hard-coded' way to write link to settings page
-			echo '<p class="wp_geo_error">' . __( 'WP Geo is not currently active as you have not entered a Google API Key', 'wp-geo') . '. <a href="' . admin_url( '/options-general.php?page=wp-geo/includes/wp-geo.php' ) . '">' . __( 'Please update your WP Geo settings', 'wp-geo' ) . '</a>.</p>';
+			$msg = apply_filters( 'wpgeo_api_error_message', '' );
+			if ( ! empty( $msg ) ) {
+				echo '<p class="wp_geo_error">' . __( 'WP Geo is not currently active as you have not entered a Google API Key', 'wp-geo') . '. <a href="' . admin_url( '/options-general.php?page=wp-geo/includes/wp-geo.php' ) . '">' . __( 'Please update your WP Geo settings', 'wp-geo' ) . '</a>.</p>';
+			}
 		}
 		
 		echo '

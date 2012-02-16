@@ -16,6 +16,7 @@ class WPGeo_API_GoogleMaps {
 		add_filter( 'wpgeo_admin_enqueue_scripts', array( $this, 'wpgeo_admin_enqueue_scripts' ), 5, 2 );
 		add_filter( 'wpgeo_api_checks', array( $this, 'check_google_api_key' ) );
 		add_filter( 'wpgeo_api_error_message', array( $this, 'google_api_error_message' ) );
+		add_filter( 'wpgeo_api_messages', array( $this, 'api_messages' ) );
 	}
 	
 	/**
@@ -130,6 +131,16 @@ class WPGeo_API_GoogleMaps {
 	 * @return (string) Error message
 	 */
 	function google_api_error_message() {
+		return __( 'WP Geo is not currently active as you have not entered a Google API Key', 'wp-geo') . '. <a href="' . admin_url( '/options-general.php?page=wp-geo/includes/wp-geo.php' ) . '">' . __( 'Please update your WP Geo settings', 'wp-geo' ) . '</a>.';
+	}
+	
+	/**
+	 * API Messages
+	 * Displayed at the top of the options page.
+	 *
+	 * @return (string) Error message
+	 */
+	function api_messages() {
 		return __( 'Before you can use WP Geo you must acquire a <a href="http://code.google.com/apis/maps/signup.html">Google API Key</a> for your blog - the plugin will not function without it!', 'wp-geo' );
 	}
 	
@@ -142,7 +153,6 @@ class WPGeo_API_GoogleMaps {
 	 * @param        $before = Before output
 	 * @param        $after = After output
 	 * @return       (string) Google locale
-	 * @todo         Move to external API
 	 */
 	function get_googlemaps_locale( $before = '', $after = '' ) {
 		$l = get_locale();

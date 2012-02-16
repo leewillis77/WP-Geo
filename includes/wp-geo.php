@@ -225,7 +225,6 @@ class WPGeo {
 	/**
 	 * Passed API Checks
 	 * By default returns true unless an API has implemented checks.
-	 * @todo Implement this with filters instead of the Key check above.
 	 *
 	 * @return (boolean)
 	 */
@@ -615,14 +614,12 @@ class WPGeo {
 	/**
 	 * Include Google Maps JavaScript API
 	 * Queue JavaScripts required by WP Geo.
-	 * @todo         Move to external API
 	 */
 	function includeGoogleMapsJavaScriptAPI() {
 		global $wpgeo;
 		$wp_geo_options = get_option( 'wp_geo_options' );
 		
 		if ( ( $wpgeo->show_maps() || $wpgeo->widget_is_active() ) && $wpgeo->passed_api_checks() ) {
-			
 			if ( is_admin() ) {
 				wp_enqueue_script( 'jquery' );
 				wp_enqueue_script( 'wpgeo-admin-post' );
@@ -690,12 +687,9 @@ class WPGeo {
 			}
 		}
 		
-		// Vars
-		// @todo Move to external API
-		$panel_open = !$panel_open ? 'jQuery("#wpgeo_location.closed h3.hndle").trigger("click");' : '';
-		
 		// Script
 		$wpgeo->includeGoogleMapsJavaScriptAPI();
+		$panel_open = ! $panel_open ? 'jQuery("#wpgeo_location.closed h3.hndle").trigger("click");' : '';
 		$html_content = '
 			<script type="text/javascript">
 			jQuery(window).load( function() {
@@ -906,29 +900,18 @@ class WPGeo {
 	
 	
 	/**
-	 * @method       Options Checkbox
-	 * @description  Return the checkbox HTML.
+	 * Options Checkbox
+	 * Return the checkbox HTML.
+	 *
 	 * @param        $id = Field ID
 	 * @param        $val = Field value
 	 * @param        $checked = Checked value
 	 * @return       (string) Checkbox HTML
-	 * @todo         Can use the WordPress checked() and disabled() function instead
 	 */
-	
 	function options_checkbox( $id, $val, $checked, $disabled = false ) {
-	
-		$is_checked = '';
-		if ( $val == $checked ) {
-			$is_checked = 'checked="checked" ';
-		}
-		
-		$is_disabled = '';
-		if ( $val == $disabled ) {
-			$is_disabled = 'disabled="disabled" ';
-		}
-		
+		$is_checked = checked( $val, $checked, false );
+		$is_disabled = disabled( $val, $disabled, false );
 		return '<input name="' . $id . '" type="checkbox" id="' . $id . '" value="' . $val . '" ' . $is_checked . $is_disabled . '/>';
-	
 	}
 	
 	
@@ -1019,9 +1002,9 @@ class WPGeo {
             echo '<div class="error"><p>' . sprintf( __( "Unable to create the markers folder %s.<br />Please create it and copy the marker images to it from %s</p>", 'wp-geo' ), str_replace( ABSPATH, '', $wpgeo->markers->upload_dir ) . '/wp-geo/markers/', str_replace( ABSPATH, '', WPGEO_DIR ) . 'img/markers' ) . '</div>';
         }
 		if ( ! $this->passed_api_checks() ) {
-			$api_msg = apply_filters( 'wpgeo_api_error_message', '' );
-			if ( ! empty( $api_msg ) ) {
-				echo '<div class="error"><p>' . $api_msg . '</p></div>';
+			$api_messages = apply_filters( 'wpgeo_api_messages', '' );
+			if ( ! empty( $api_messages ) ) {
+				echo '<div class="error"><p>' . $api_messages . '</p></div>';
 			}
 		}
 		echo '<table class="form-table">
